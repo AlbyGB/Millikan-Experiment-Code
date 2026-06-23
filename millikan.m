@@ -63,71 +63,71 @@ for i = 1:size(t1_u1, 2)
     delta_q(i) = sqrt((dq_ds_num * ds)^2 + (dq_dd_num * d_distanza_piastre)^2 + (dq_dU_num * dU)^2);
 end
 
-% calcolo di n (max(n) dovrebbe essere 7 da manuale)
-[q_ordinato, idx_ordinati] = sort(q, 'descend');
-curr = 0;
-ratio = 0;
-ratios = [];
-
-% j = i+1 così si minimizzano le iterazioni (avendo ordinato q)
-for i = 1:size(q_ordinato, 2)
-    curr = q_ordinato(i);
-    for j = i+1:size(q_ordinato, 2)
-        ratio = curr / q_ordinato(j);
-        ratios(i, j) = ratio;
-    end
-end
-
-[n_righe, n_colonne] = size(ratios);
-counter = 1;
-
-lista_rapporti = []; % ratios senza zeri (solo triangolo superiore)
-coppie_indici = [];
-
-for i = 1:n_righe
-    for j = i+1:n_colonne
-        lista_rapporti(counter) = ratios(i, j);
-        coppie_indici(counter, :) = [i, j];
-
-        counter = counter + 1;
-    end
-end
-
-passo_tolleranza = 0.05;
-
-% necessario per arrotondamento più preciso
-lista_rapporti_regolati = round(lista_rapporti / passo_tolleranza) * passo_tolleranza;
-
-% categorie di rapporti (set da lista_rapporti_regolati)
-[valori_unici, ~, idx_gruppo] = unique(lista_rapporti_regolati);
-
-Set_Rapporti = table();
-riga_tabella = 1;
-
-% tabella rapporti con relative gocce
-for g = 1:length(valori_unici)
-    elementi_nel_set = find(idx_gruppo == g);
-
-    if length(elementi_nel_set) >= 2
-        for k = 1:length(elementi_nel_set)
-            idx_lista = elementi_nel_set(k);
-
-            goccia_a = coppie_indici(idx_lista, 1);
-            goccia_b = coppie_indici(idx_lista, 2);
-            valore_rapporto_reale = lista_rapporti(idx_lista);
-
-            Set_Rapporti.ID_Gruppo(riga_tabella) = g;
-            Set_Rapporti.Rapporto_Arrotondato(riga_tabella) = valori_unici(g);
-            Set_Rapporti.Rapporto_Reale(riga_tabella) = valore_rapporto_reale;
-            Set_Rapporti.Goccia_Numeratore(riga_tabella) = goccia_a;
-            Set_Rapporti.Goccia_Denominatore(riga_tabella) = goccia_b;
-
-            riga_tabella = riga_tabella + 1;
-        end
-    end
-end
-
-Set_Rapporti = sortrows(Set_Rapporti, 'ID_Gruppo');
+% % calcolo di n (max(n) dovrebbe essere 7 da manuale)
+% [q_ordinato, idx_ordinati] = sort(q, 'descend');
+% curr = 0;
+% ratio = 0;
+% ratios = [];
+% 
+% % j = i+1 così si minimizzano le iterazioni (avendo ordinato q)
+% for i = 1:size(q_ordinato, 2)
+%     curr = q_ordinato(i);
+%     for j = i+1:size(q_ordinato, 2)
+%         ratio = curr / q_ordinato(j);
+%         ratios(i, j) = ratio;
+%     end
+% end
+% 
+% [n_righe, n_colonne] = size(ratios);
+% counter = 1;
+% 
+% lista_rapporti = []; % ratios senza zeri (solo triangolo superiore)
+% coppie_indici = [];
+% 
+% for i = 1:n_righe
+%     for j = i+1:n_colonne
+%         lista_rapporti(counter) = ratios(i, j);
+%         coppie_indici(counter, :) = [i, j];
+% 
+%         counter = counter + 1;
+%     end
+% end
+% 
+% passo_tolleranza = 0.05;
+% 
+% % necessario per arrotondamento più preciso
+% lista_rapporti_regolati = round(lista_rapporti / passo_tolleranza) * passo_tolleranza;
+% 
+% % categorie di rapporti (set da lista_rapporti_regolati)
+% [valori_unici, ~, idx_gruppo] = unique(lista_rapporti_regolati);
+% 
+% Set_Rapporti = table();
+% riga_tabella = 1;
+% 
+% % tabella rapporti con relative gocce
+% for g = 1:length(valori_unici)
+%     elementi_nel_set = find(idx_gruppo == g);
+% 
+%     if length(elementi_nel_set) >= 2
+%         for k = 1:length(elementi_nel_set)
+%             idx_lista = elementi_nel_set(k);
+% 
+%             goccia_a = coppie_indici(idx_lista, 1);
+%             goccia_b = coppie_indici(idx_lista, 2);
+%             valore_rapporto_reale = lista_rapporti(idx_lista);
+% 
+%             Set_Rapporti.ID_Gruppo(riga_tabella) = g;
+%             Set_Rapporti.Rapporto_Arrotondato(riga_tabella) = valori_unici(g);
+%             Set_Rapporti.Rapporto_Reale(riga_tabella) = valore_rapporto_reale;
+%             Set_Rapporti.Goccia_Numeratore(riga_tabella) = goccia_a;
+%             Set_Rapporti.Goccia_Denominatore(riga_tabella) = goccia_b;
+% 
+%             riga_tabella = riga_tabella + 1;
+%         end
+%     end
+% end
+% 
+% Set_Rapporti = sortrows(Set_Rapporti, 'ID_Gruppo');
 
 % calcolo n usando metodo monte carlo (tramite dispersione minima)
 % l'idea è di minimizzare la dispersione degli e_test andando a trovare il
@@ -137,7 +137,7 @@ best_n = zeros(1, 9); % 9 perchè prima misurazione inaccurata eliminata
 
 % si potrebbe ottimizzare usando q ordinato e scartando n non crescenti (verificare)
 % 10 milioni di iterazioni per sicurezza
-for i = 1:10000000
+for i = 1:100000000
     n_causali = randi(7, 1, 9);
 
     e_test = q ./ n_causali;
